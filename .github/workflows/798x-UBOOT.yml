@@ -24,10 +24,10 @@ jobs:
         with:
           gh_token: ${{secrets.GITHUB_TOKEN}}
           delete_releases: true
-          releases_keep_latest: 0
+          releases_keep_latest: 1
           delete_tags: true
           delete_workflows: true
-          workflows_keep_day: 0
+          workflows_keep_day: 7
 
   build:
     runs-on: ubuntu-latest
@@ -36,7 +36,7 @@ jobs:
       fail-fast: false
       #max-parallel: 4
       matrix:
-        WRT_ATF: [atf-20220606-637ba581b, atf-20231013-0ea67d76a, atf-20250212-e09077068]
+        WRT_ATF: [atf-20250212-e09077068]
         WRT_MTK: [uboot-mtk-20230718-09eda825]
 
     steps:
@@ -82,6 +82,11 @@ jobs:
             soc="${BASH_REMATCH[1]}"
             rest="${BASH_REMATCH[2]}"
             board="${rest%_multi_layout}"
+
+          # 仅处理指定设备
+          if [[ "$board" != "jdcloud_re-cp-03" && "$board" != "360t7" ]]; then
+              continue
+          fi
 
             key="$soc:$board"
             if [[ $rest == *_multi_layout ]]; then
@@ -148,10 +153,6 @@ jobs:
           tag_name: ${{env.WRT_AUTHOR}}_${{env.WRT_VER}}_${{env.WRT_DATE}}
           files: ./wrt/upload/*.*
           body: |
-            这是个平台固件包，内含多个设备！
-            请注意选择你需要的设备固件！
-            不要问，刷就完事了！
-
             平台：${{env.WRT_TARGET}}
             源码：${{env.WRT_REPO}}
             分支：${{env.WRT_BRANCH}}
