@@ -36,7 +36,7 @@ jobs:
       fail-fast: false
       #max-parallel: 4
       matrix:
-        WRT_ATF: [atf-20220606-637ba581b, atf-20240117-bacca82a8]
+        WRT_ATF: [atf-20240117-bacca82a8]
         WRT_MTK: [uboot-mtk-20230718-09eda825]
 
     steps:
@@ -47,7 +47,6 @@ jobs:
         env:
           DEBIAN_FRONTEND: noninteractive
         run: |
-          sudo -E apt -yqq purge firefox
           sudo -E apt -yqq update
           sudo -E apt -yqq full-upgrade
           sudo -E apt -yqq autoremove --purge
@@ -83,6 +82,11 @@ jobs:
             soc="${BASH_REMATCH[1]}"
             rest="${BASH_REMATCH[2]}"
             board="${rest%_multi_layout}"
+
+          # 仅编译指定设备
+          if [[ "$board" != "jdcloud_re-cp-03" && "$board" != "360t7" ]]; then
+              continue
+          fi
 
             key="$soc:$board"
             if [[ $rest == *_multi_layout ]]; then
@@ -149,10 +153,6 @@ jobs:
           tag_name: ${{env.WRT_AUTHOR}}_${{env.WRT_VER}}_${{env.WRT_DATE}}
           files: ./wrt/upload/*.*
           body: |
-            这是个平台固件包，内含多个设备！
-            请注意选择你需要的设备固件！
-            不要问，刷就完事了！
-
             平台：${{env.WRT_TARGET}}
             源码：${{env.WRT_REPO}}
             分支：${{env.WRT_BRANCH}}
@@ -162,3 +162,4 @@ jobs:
 
             7981设备：${{env.WRT_TYPE_7981}}
             7986设备：${{env.WRT_TYPE_7986}}
+            
